@@ -97,11 +97,13 @@ class IdeHelperCommand extends Command
      */
     protected function getFieldsFromDatabase(array $reject = [])
     {
-        $databases = Arr::where(config('database.connections', []), function ($value) {
-            $supports = ['mysql'];
+        $defaultConnection = \Config::get('database.default');
+        $connectionConfig = \Config::get("database.connections.{$defaultConnection}");
 
-            return in_array(strtolower(Arr::get($value, 'driver')), $supports);
-        });
+        $supports = ['mysql', 'pgsql'];
+        if (!in_array(strtolower(Arr::get($connectionConfig, 'driver')), $supports)) {
+            throw new \Exception("Unsupported database type: " . $connectionConfig['driver']);
+        }
 
         $exceptTables = [
             'migrations',
@@ -111,24 +113,36 @@ class IdeHelperCommand extends Command
         $data = collect();
 
         try {
-            foreach ($databases as $connectName => $value) {
-                $sql = sprintf('SELECT * FROM information_schema.columns WHERE table_schema = "%s"', $value['database']);
+            $connection = \DB::connection($defaultConnection);
+            $databaseType = $connection->getDriverName();
+            $databaseName = $connectionConfig['database'];
 
-                $each = collect(DB::connection($connectName)->select($sql))
-                    ->map(function ($v) use ($exceptTables, &$reject) {
-                        $v = (array) $v;
-
-                        if (in_array($v['TABLE_NAME'], $exceptTables) || in_array($v['COLUMN_NAME'], $reject)) {
-                            return;
-                        }
-
-                        return $v['COLUMN_NAME'];
-                    })
-                    ->filter();
-
-                $data = $data->merge($each);
+            if ($databaseType === 'mysql') {
+                $sql = "SELECT TABLE_NAME, COLUMN_NAME
+                        FROM INFORMATION_SCHEMA.COLUMNS
+                        WHERE TABLE_SCHEMA = ?";
+            } elseif ($databaseType === 'pgsql') {
+                $sql = "SELECT table_name as TABLE_NAME, column_name as COLUMN_NAME
+                        FROM information_schema.columns
+                        WHERE table_schema = 'public' AND table_catalog = ?";
             }
+
+            $columns = $connection->select($sql, [$databaseName]);
+
+            $data = collect($columns)
+                ->map(function ($v) use ($exceptTables) {
+                    $v = (array) $v;
+
+                    if (in_array($v['TABLE_NAME'], $exceptTables)) {
+                        return null;
+                    }
+
+                    return $v['COLUMN_NAME'];
+                })
+                ->filter();
+
         } catch (\Throwable $e) {
+            // Handle or log the exception as needed
         }
 
         return $data->unique();

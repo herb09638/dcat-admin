@@ -210,62 +210,99 @@ class ScaffoldController extends Controller
      */
     protected function getDatabaseColumns($db = null, $tb = null)
     {
-        $databases = Arr::where(config('database.connections', []), function ($value) {
-            $supports = ['mysql'];
-
-            return in_array(strtolower(Arr::get($value, 'driver')), $supports);
-        });
-
         $data = [];
 
         try {
-            foreach ($databases as $connectName => $value) {
-                if ($db && $db != $value['database']) {
-                    continue;
-                }
+            $defaultConnection = config('database.default');
+            $connectionConfig = config("database.connections.{$defaultConnection}");
 
-                $sql = sprintf('SELECT * FROM information_schema.columns WHERE table_schema = "%s"', $value['database']);
+            $connectName = $defaultConnection;
+            $value = array_merge($connectionConfig, [
+                'driver' => env('DB_CONNECTION', $connectionConfig['driver']),
+                'host' => env('DB_HOST', $connectionConfig['host'] ?? ''),
+                'port' => env('DB_PORT', $connectionConfig['port'] ?? ''),
+                'database' => env('DB_DATABASE', $connectionConfig['database'] ?? ''),
+                'username' => env('DB_USERNAME', $connectionConfig['username'] ?? ''),
+                'password' => env('DB_PASSWORD', $connectionConfig['password'] ?? ''),
+            ]);
+
+            // 如果您想要確保只有特定的數據庫驅動被接受，可以添加以下檢查
+            $supportedDrivers = ['mysql', 'pgsql'];  // 添加您支持的驅動
+            if (!in_array($value['driver'], $supportedDrivers)) {
+                return [];
+            }
+
+            $connection = \DB::connection($connectName);
+            $databaseType = $connection->getDriverName();
+            $prefix = $value['prefix'] ?? '';
+            $database = $value['database'];
+
+            $data[$database] = [];
+
+            if ($databaseType === 'mysql') {
+                $sql = "SELECT TABLE_NAME, COLUMN_NAME, COLUMN_TYPE, COLUMN_DEFAULT, IS_NULLABLE,
+                               COLUMN_KEY, EXTRA, COLUMN_COMMENT, ORDINAL_POSITION, DATA_TYPE
+                        FROM INFORMATION_SCHEMA.COLUMNS
+                        WHERE TABLE_SCHEMA = ?";
+                $bindings = [$database];
 
                 if ($tb) {
-                    $p = Arr::get($value, 'prefix');
-
-                    $sql .= " AND TABLE_NAME = '{$p}{$tb}'";
+                    $sql .= " AND TABLE_NAME = ?";
+                    $bindings[] = $prefix . $tb;
                 }
 
-                $sql .= ' ORDER BY `ORDINAL_POSITION` ASC';
+                $sql .= " ORDER BY TABLE_NAME, ORDINAL_POSITION";
 
-                $tmp = DB::connection($connectName)->select($sql);
+                $columns = $connection->select($sql, $bindings);
 
-                $collection = collect($tmp)->map(function ($v) use ($value) {
-                    if (! $p = Arr::get($value, 'prefix')) {
-                        return (array) $v;
+            } elseif ($databaseType === 'pgsql') {
+                $sql = "SELECT c.table_name, c.column_name, c.data_type, c.column_default,
+                               c.is_nullable, c.ordinal_position,
+                               CASE WHEN pk.constraint_type = 'PRIMARY KEY' THEN 'PRI' ELSE '' END as column_key,
+                               pg_catalog.col_description(format('%s.%s', c.table_schema, c.table_name)::regclass::oid, c.ordinal_position) as column_comment
+                        FROM information_schema.columns c
+                        LEFT JOIN (
+                            SELECT ku.table_schema, ku.table_name, ku.column_name, tc.constraint_type
+                            FROM information_schema.table_constraints tc
+                            JOIN information_schema.key_column_usage ku ON tc.constraint_name = ku.constraint_name
+                            WHERE tc.constraint_type = 'PRIMARY KEY'
+                        ) pk ON c.table_schema = pk.table_schema AND c.table_name = pk.table_name AND c.column_name = pk.column_name
+                        WHERE c.table_schema = 'public' AND c.table_catalog = ?";
+                $bindings = [$database];
+
+                if ($tb) {
+                    $sql .= " AND c.table_name = ?";
+                    $bindings[] = $prefix . $tb;
+                }
+
+                $sql .= " ORDER BY c.table_name, c.ordinal_position";
+
+                $columns = $connection->select($sql, $bindings);
+            } else {
+                throw new \Exception("Unsupported database type: $databaseType");
+            }
+
+            foreach ($columns as $column) {
+                $tableName = \Str::replaceFirst($prefix, '', $column->table_name);
+                $columnName = $column->column_name;
+
+                if ($databaseType === 'mysql') {
+                    $type = strtolower($column->data_type);
+                    if (\Str::contains(strtolower($column->column_type), 'unsigned')) {
+                        $type .= '@unsigned';
                     }
-                    $v = (array) $v;
+                } elseif ($databaseType === 'pgsql') {
+                    $type = strtolower($column->data_type);
+                }
 
-                    $v['TABLE_NAME'] = Str::replaceFirst($p, '', $v['TABLE_NAME']);
-
-                    return $v;
-                });
-
-                $data[$value['database']] = $collection->groupBy('TABLE_NAME')->map(function ($v) {
-                    return collect($v)->keyBy('COLUMN_NAME')->map(function ($v) {
-                        $v['COLUMN_TYPE'] = strtolower($v['COLUMN_TYPE']);
-                        $v['DATA_TYPE'] = strtolower($v['DATA_TYPE']);
-
-                        if (Str::contains($v['COLUMN_TYPE'], 'unsigned')) {
-                            $v['DATA_TYPE'] .= '@unsigned';
-                        }
-
-                        return [
-                            'type'     => $v['DATA_TYPE'],
-                            'default'  => $v['COLUMN_DEFAULT'],
-                            'nullable' => $v['IS_NULLABLE'],
-                            'key'      => $v['COLUMN_KEY'],
-                            'id'       => $v['COLUMN_KEY'] === 'PRI',
-                            'comment'  => $v['COLUMN_COMMENT'],
-                        ];
-                    })->toArray();
-                })->toArray();
+                $data[$database][$tableName][$columnName] = [
+                    'type' => $type,
+                    'default' => $column->column_default,
+                    'nullable' => strtoupper($column->is_nullable) === 'YES',
+                    'key' => $column->column_key ?? '',
+                    'id' => ($column->column_key ?? '') === 'PRI',
+                    'comment' => $column->column_comment ?? null,
+                ];
             }
         } catch (\Throwable $e) {
         }
