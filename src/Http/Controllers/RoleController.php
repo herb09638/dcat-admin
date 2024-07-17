@@ -63,6 +63,25 @@ class RoleController extends AdminController
                 return $tree->render();
             });
 
+            $bindMenu = config('admin.menu.role_bind_menu', true);
+            if ($bindMenu) {
+                $show->field('menus')->unescape()->as(function ($menu) {
+                    $menuModel = config('admin.database.menu_model');
+                    $menuModel = new $menuModel();
+                    $nodes = $menuModel->allNodes();
+
+                    $tree = Tree::make($nodes);
+                    $tree->setTitleColumn('title')->treeState(false);
+
+                    $keyName = $menuModel->getKeyName();
+                    $tree->check(
+                        array_column(Helper::array($menu), $keyName)
+                    );
+
+                    return $tree->render();
+                });
+            }
+
             $show->field('created_at');
             $show->field('updated_at');
 
