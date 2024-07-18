@@ -27,8 +27,8 @@ export default class AddFile {
                     <a class="btn btn-sm btn-white" data-file-act="delete" style="display: none">
                     <i class="feather icon-trash red-dark" style="font-size:13px"></i></a>
                     <a class="btn btn-sm btn-white" data-file-act="preview" ><i class="feather icon-zoom-in"></i></a>
-                    <a class='btn btn-sm btn-white' data-file-act='order' data-order="1" style="display: none"><i class='feather icon-arrow-up'></i></a>
-                    <a class='btn btn-sm btn-white' data-file-act='order' data-order="0" style="display: none"><i class='feather icon-arrow-down'></i></a>
+                    <a class='btn btn-sm btn-white' data-file-act='order' data-order="1" style="display: none"><i class='feather icon-arrow-left'></i></a>
+                    <a class='btn btn-sm btn-white' data-file-act='order' data-order="0" style="display: none"><i class='feather icon-arrow-right'></i></a>
 
                     </div>`).appendTo($li);
         } else {
@@ -42,8 +42,8 @@ export default class AddFile {
                 `);
 
             $btns = $(`
-<span style="right: 65px;" class="file-action d-none" data-file-act='order' data-order="1"><i class='feather icon-arrow-up'></i></span>
-<span style="right: 45px;" class="file-action d-none" data-file-act='order' data-order="0"><i class='feather icon-arrow-down'></i></span>
+<span style="right: 65px;" class="file-action d-none" data-file-act='order' data-order="1"><i class='feather icon-arrow-left'></i></span>
+<span style="right: 45px;" class="file-action d-none" data-file-act='order' data-order="0"><i class='feather icon-arrow-right'></i></span>
 <span style="right: 25px;" class="file-action d-none" data-file-act='download' data-id=''><i class='feather icon-download-cloud'></i></span>
 <span data-file-act="cancel" class="file-action" style="font-size:13px">
     <i class="feather icon-x red-dark"></i>
