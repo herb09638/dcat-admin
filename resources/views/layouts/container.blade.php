@@ -24,7 +24,7 @@
     <p class="clearfix blue-grey lighten-2 mb-0 text-center">
             <span class="text-center d-block d-md-inline-block mt-25">
                 Powered by
-                <a target="_blank" href="#">髮基因後台</a>
+                <a target="_blank" href="#">{{ config('admin.name') }}</a>
                 <span>&nbsp;·&nbsp;</span>
                 v{{ Dcat\Admin\Admin::VERSION }}
             </span>
