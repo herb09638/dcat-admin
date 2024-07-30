@@ -140,7 +140,7 @@ import AddUploadedFile from './Upload/AddUploadedFile'
                 options = _this.options,
                 $wrap = _this.$selector.find(options.wrapper),
                 // 图片容器
-                $queue = $('<ul class="filelist"></ul>').appendTo($wrap.find('.queueList')),
+                $queue = $('<ul class="filelist" id="filelist"></ul>').appendTo($wrap.find('.queueList')),
                 // 状态栏，包括进度和控制按钮
                 $statusBar = $wrap.find('.statusBar'),
                 // 文件总体选择信息。

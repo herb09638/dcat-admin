@@ -22,8 +22,8 @@ export default class AddUploadedFile {
         if (! showImg && options.sortable) {
             // 文件排序
             html += `
-<p style="right: 65px" class="file-action" data-file-act='order' data-order="1" data-id='${file.serverId}'><i class='feather icon-arrow-up'></i></p>
-<p style="right: 45px" class="file-action" data-file-act='order' data-order="0" data-id='${file.serverId}'><i class='feather icon-arrow-down'></i></p>
+<p style="right: 65px" class="file-action" data-file-act='order' data-order="1" data-id='${file.serverId}'><i class='feather icon-arrow-left'></i></p>
+<p style="right: 45px" class="file-action" data-file-act='order' data-order="0" data-id='${file.serverId}'><i class='feather icon-arrow-right'></i></p>
 `;
         }
 
@@ -56,8 +56,8 @@ export default class AddUploadedFile {
             if (options.sortable) {
                 // 文件排序
                 html += `
-<a class='btn btn-sm btn-white' data-file-act='order' data-order="1" data-id='${file.serverId}'><i class='feather icon-arrow-up'></i></a>
-<a class='btn btn-sm btn-white' data-file-act='order' data-order="0" data-id='${file.serverId}'><i class='feather icon-arrow-down'></i></a>
+<a class='btn btn-sm btn-white' data-file-act='order' data-order="1" data-id='${file.serverId}'><i class='feather icon-arrow-left'></i></a>
+<a class='btn btn-sm btn-white' data-file-act='order' data-order="0" data-id='${file.serverId}'><i class='feather icon-arrow-right'></i></a>
 `;
             }
 

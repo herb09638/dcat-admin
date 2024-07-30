@@ -90,6 +90,58 @@ class Administrator extends Model implements AuthenticatableContract, Authorizab
      */
     public function canSeeMenu($menu)
     {
-        return true;
+        // 如果用戶是管理員，則可以查看所有菜單
+        if ($this->isAdministrator()) {
+            return true;
+        }
+
+        // 如果菜單是一個 Menu 實例
+        if ($menu instanceof Menu) {
+            // 檢查用戶是否有菜單所需的權限
+            if (Menu::withPermission()) {
+                $permissions = $menu->permissions->pluck('slug')->toArray();
+                foreach ($permissions as $permission) {
+                    if ($this->can($permission)) {
+                        return true;
+                    }
+                }
+            }
+
+            // 檢查用戶是否在菜單允許的角色中
+            if (Menu::withRole()) {
+                $roles = $menu->roles->pluck('slug')->toArray();
+                if ($this->inRoles($roles)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        // 如果菜單是一個數組
+        if (is_array($menu)) {
+            // 檢查菜單是否設置了權限
+            if (isset($menu['permissions']) && count($menu['permissions']) > 0) {
+                $permissionSlugOrIds = array_map(function ($permission) {
+                    return empty($permission['slug']) ? $permission['id'] : $permission['slug'];
+                }, $menu['permissions']);
+                foreach ($permissionSlugOrIds as $slugOrId) {
+                    if ($this->can($slugOrId)) {
+                        return true;
+                    }
+                }
+            }
+
+            // 檢查菜單是否設置了角色
+            if (isset($menu['roles']) && count($menu['roles']) > 0) {
+                $roleSlugOrIds = array_map(function ($role) {
+                    return empty($role['slug']) ? $role['id'] : $role['slug'];
+                }, $menu['roles']);
+                return $this->inRoles($roleSlugOrIds);
+            }
+        }
+
+        // 如果沒有設置任何權限或角色限制，默認允許查看
+        return false;
     }
 }

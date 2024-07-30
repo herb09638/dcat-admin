@@ -104,8 +104,16 @@ trait HasPermissions
 
         $roles = Helper::array($roles);
 
-        return $all->pluck('slug')->intersect($roles)->isNotEmpty() ?:
-            $all->pluck('id')->intersect($roles)->isNotEmpty();
+        $roleIds = $all->pluck('id')->toArray();
+        $roleSlugs = $all->pluck('slug')->toArray();
+
+        foreach ($roles as $role) {
+            if (in_array($role, $roleIds) || in_array($role, $roleSlugs)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

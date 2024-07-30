@@ -204,7 +204,13 @@ class VersionManager
 
         $position = array_search($version, array_keys($versions));
 
-        return array_slice($versions, ++$position);
+        if ($position === false) {
+            // 如果版本不存在，返回所有版本
+            return $versions;
+        }
+
+        // 返回該版本之後的所有版本
+        return array_slice($versions, $position + 1);
     }
 
     public function getFileVersions($name)
