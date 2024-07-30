@@ -145,16 +145,16 @@ export default class DialogForm {
 
         // 加载js代码
         template = Dcat.assets.resolveHtml(template).render();
-        
+
         let btns = [options.lang.submit],
             dialogOpts = {
                 type: 1,
                 area: (function (v) {
                         // 屏幕小于800则最大化展示
                         if (w.screen.width <= 800) {
-                            return ['100%', '100%',];
+                            return ['100%', '80%',];
                         }
-    
+
                         return v;
                     })(options.area),
                 content: template,
@@ -177,7 +177,7 @@ export default class DialogForm {
 
             dialogOpts.btn2 = function () { // 重置按钮
                 self.$form.trigger('reset');
-                
+
                 return false;
             };
         }
@@ -202,7 +202,7 @@ export default class DialogForm {
 
     // 提交表单
     submit() {
-        let self = this, 
+        let self = this,
             options = self.options,
             counter = self.$target.attr('counter'),
             $submitBtn = self._dialogs[counter].find('.layui-layer-btn0');
