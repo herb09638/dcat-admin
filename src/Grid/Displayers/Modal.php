@@ -68,7 +68,8 @@ class Modal extends AbstractDisplayer
             ->title($title)
             ->body($html)
             ->delay(300)
-            ->button($this->renderButton());
+            ->button($this->renderButton())
+            ->on('shown.bs.modal', "$('.dropdown-toggle').dropdown();"); // enable dropdown menu in modal
     }
 
     protected function renderButton()
