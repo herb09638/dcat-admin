@@ -86,22 +86,31 @@
         uploader.build();
         uploader.preview();
 
-        function updateOrder() {
-            var items = filelistSelector.querySelectorAll('li');
-            var newOrder = Array.from(items).map(function(item) {
-                return item.querySelector('[data-file-act="deleteurl"]').dataset.id;
-            });
+        function updateOrder($sortable) {
+            console.log($sortable);
+            var el = $($sortable[0].el);
+            var fieldName = el.parents().filter(function() {
+                return $(this).attr('class') && $(this).attr('class').split(' ').some(function(className) {
+                    return className.startsWith('field_');
+                });
+            }).first();
+            console.log(fieldName);
+            if(!fieldName) return;
 
-            var hiddenInput = document.querySelector('input[name="images"]');
-            hiddenInput.value = newOrder.join(',');
+            fieldName = fieldName.attr('class').split('_')[1];
+            var newOrder = el.find('li').map(function() {
+                return $(this).find('[data-file-act="deleteurl"]').data('id');
+            }).get();
+
+            $('input[name="' + fieldName.trim() + '"]').val(newOrder.join(','));
         }
+
         if (options.sortable) {
-            var filelistSelector = document.querySelector('#filelist');
-            var filesSortable = Sortable.create(filelistSelector, {
+            $('.filelist').sortable({
                 animation: 150,
                 handle: '.title, .imgWrap',
-                onEnd: function(evt) {
-                    updateOrder();
+                onEnd: function(event, ui) {
+                    updateOrder($(this));
                 }
             });
         }
