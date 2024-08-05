@@ -57,7 +57,7 @@
     </div>
 </div>
 
-<script require="@webuploader" init="{!! $selector !!}">
+<script require="@webuploader,@sortable" init="{!! $selector !!}">
     var uploader,
         newPage,
         options = {!! $options !!},
@@ -85,6 +85,26 @@
         uploader = Dcat.Uploader(opts);
         uploader.build();
         uploader.preview();
+
+        function updateOrder() {
+            var items = filelistSelector.querySelectorAll('li');
+            var newOrder = Array.from(items).map(function(item) {
+                return item.querySelector('[data-file-act="deleteurl"]').dataset.id;
+            });
+
+            var hiddenInput = document.querySelector('input[name="images"]');
+            hiddenInput.value = newOrder.join(',');
+        }
+        if (options.sortable) {
+            var filelistSelector = document.querySelector('#filelist');
+            var filesSortable = Sortable.create(filelistSelector, {
+                animation: 150,
+                handle: '.title, .imgWrap',
+                onEnd: function(evt) {
+                    updateOrder();
+                }
+            });
+        }
 
         for (var i = 0; i < events.length; i++) {
             var evt = events[i];

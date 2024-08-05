@@ -175,7 +175,10 @@ class Asset
             'js' => '@admin/dcat/plugins/jquery-qrcode/dist/jquery-qrcode.min.js',
         ],
         '@sortable' => [
-            'js' => '@admin/dcat/plugins/sortable/Sortable.min.js',
+            'js' => [
+                '@admin/dcat/plugins/sortable/Sortable.min.js',
+                '@admin/dcat/plugins/sortable/jquery-sortable.js'
+            ],
         ],
         '@autocomplete' => [
             'js' => '@admin/dcat/plugins/autocomplete/jquery.autocomplete.min.js',
