@@ -210,8 +210,10 @@ JS
             var group = parent.find('div.cascade-group.'+event.class);
             if (compare(checked, event.value, event.operator)) {
                 group.removeClass('d-none');
+                group.find('input, select, textarea').prop('disabled', false);
             } else {
                 group.addClass('d-none');
+                group.find('input, select, textarea').prop('disabled', true);
             }
         });
     }).trigger(event);

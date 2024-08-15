@@ -102,7 +102,14 @@
                 return $(this).find('[data-file-act="deleteurl"]').data('id');
             }).get();
 
-            $('input[name="' + fieldName.trim() + '"]').val(newOrder.join(','));
+            var targetInput = el.parents().find('input[type="hidden"][name*="' + fieldName.trim() + '"][class="file-input"]').first();
+            console.log(targetInput);
+
+            if (targetInput.length) {
+                targetInput.val(newOrder.join(','));
+            } else {
+                console.log('找不到符合條件的 input 元素');
+            }
         }
 
         if (options.sortable) {
