@@ -117,6 +117,10 @@ class NestedForm extends WidgetForm
             return $this;
         }
 
+        if (is_string($data) && json_validate($data)) {
+            $data = json_decode($data, true);
+        }
+
         foreach ($data as $value) {
             if (! isset($value[$relatedKeyName])) {
                 continue;

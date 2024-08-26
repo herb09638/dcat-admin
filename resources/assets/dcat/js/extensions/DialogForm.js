@@ -166,8 +166,9 @@ export default class DialogForm {
                     if (options.forceRefresh) { // 是否强制刷新
                         self._dialogs[counter] = self._idx[counter] = null;
                     } else {
-                        self._dialogs[counter].hide();
-                        return false;
+                        // self._dialogs[counter].hide();
+                        // return false;
+                        self._dialogs[counter] = self._idx[counter] = null;
                     }
                 }
             };
