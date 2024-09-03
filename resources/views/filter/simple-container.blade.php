@@ -15,7 +15,7 @@
                 </div>
                 <div class="btn-group btn-group-sm default btn-mini" style="height: fit-content"  >
                     @if(!$disableResetButton)
-                        <a  href="{!! $action !!}" class="reset btn btn-white btn-sm ">
+                        <a  href="{!! URL::query($action, ['reset' => 1]) !!}" class="reset btn btn-white btn-sm ">
                             <i class="feather icon-rotate-ccw"></i><span class="d-none d-sm-inline">&nbsp;&nbsp;{{ trans('admin.reset') }}</span>
                         </a>
                     @endif

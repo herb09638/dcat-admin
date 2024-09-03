@@ -22,7 +22,7 @@
                 </button>
 
                 @if(!$disableResetButton)
-                <a style="margin-left: 6px" href="{!! $action !!}" class="reset btn btn-white btn-sm ">
+                <a style="margin-left: 6px" href="{!! URL::query($action, ['reset' => 1]) !!}" class="reset btn btn-white btn-sm ">
                     <i class="feather icon-rotate-ccw"></i><span class="d-none d-sm-inline">&nbsp;&nbsp;{{ trans('admin.reset') }}</span>
                 </a>
                 @endif

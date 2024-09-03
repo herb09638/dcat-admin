@@ -221,6 +221,8 @@ class Filter implements Renderable
         $this->scopes = new Collection();
 
         $this->callResolving();
+
+        $this->expand = isset($_GET['reset']) && $_GET['reset'] == 1;
     }
 
     /**
