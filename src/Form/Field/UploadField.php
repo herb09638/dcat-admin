@@ -412,6 +412,10 @@ trait UploadField
         $storage = $this->getStorage();
 
         foreach ((array) $paths as $path) {
+            if ((bool)realpath($path) === false) {
+                continue;
+            }
+
             if ($storage->exists($path)) {
                 $storage->delete($path);
             } else {

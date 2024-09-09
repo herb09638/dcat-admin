@@ -99,7 +99,11 @@
 
             fieldName = fieldName.attr('class').split('_')[1];
             var newOrder = el.find('li').map(function() {
-                return $(this).attr('title');
+                var result = $(this).find('[data-file-act="deleteurl"]').data('id');
+                if (result === undefined || result === null || result === '') {
+                    result = $(this).attr('title');
+                }
+                return result;
             }).get();
 
             var targetInput = el.parents().find('input[type="hidden"][name*="' + fieldName.trim() + '"][class="file-input"]').first();
