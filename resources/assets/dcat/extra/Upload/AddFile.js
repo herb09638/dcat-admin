@@ -188,7 +188,7 @@ export default class AddFile {
             } else if (cur === 'complete') {
                 if (_this.uploader.isImage()) {
                     $li.append('<span class="success"><em></em><i class="feather icon-check"></i></span>');
-                    $li.attr('title', file.id);
+                    console.log(file);
                 } else {
                     $li.find('._success').show();
                 }
