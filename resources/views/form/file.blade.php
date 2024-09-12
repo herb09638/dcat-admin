@@ -106,7 +106,7 @@
                 return result;
             }).get();
 
-            var targetInput = el.parents().find('input[type="hidden"][name*="' + fieldName.trim() + '"][class="file-input"]').first();
+            var targetInput = $('{!! $selector !!}').find('input[type="hidden"][name*="' + fieldName.trim() + '"][class="file-input"]').first();
             console.log(targetInput);
 
             if (targetInput.length) {

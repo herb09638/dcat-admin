@@ -206,7 +206,13 @@ trait HasFiles
                 $input[$input['_column']] = '';
             } else {
                 [$relation, $relationKey] = $input['_relation'];
-                $keyName = $this->builder()->field($relation)->getKeyName();
+                $field = $this->builder()->field($relation);
+                if ($field instanceof Field\Embeds) {
+                    $keyName = $relation;
+                    $relationKey = $input['_column'];
+                } else {
+                    $keyName = $field->getKeyName();
+                }
 
                 $input[$relation] = [
                     $relationKey => [
