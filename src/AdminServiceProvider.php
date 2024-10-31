@@ -104,11 +104,11 @@ class AdminServiceProvider extends ServiceProvider
 
     public function boot()
     {
-        $uri = $_SERVER['REQUEST_URI'];
+        $uri = $_SERVER['REQUEST_URI'] ?? '';
         $prefix = config('admin.route.prefix');
 
         // uri with prefix
-        if (strpos($uri, $prefix) === 1) {
+        if ($this->app->runningInConsole() || strpos($uri, $prefix) === 1) {
             $this->registerDefaultSections();
             $this->registerViews();
             $this->ensureHttps();
