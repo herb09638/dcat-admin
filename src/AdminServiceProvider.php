@@ -104,14 +104,20 @@ class AdminServiceProvider extends ServiceProvider
 
     public function boot()
     {
-        $this->registerDefaultSections();
-        $this->registerViews();
-        $this->ensureHttps();
-        $this->bootApplication();
-        $this->registerPublishing();
-        $this->compatibleBlade();
-        $this->bootExtensions();
-        $this->registerBladeDirective();
+        $uri = $_SERVER['REQUEST_URI'];
+        $prefix = config('admin.route.prefix');
+
+        // uri with prefix
+        if (strpos($uri, $prefix) === 1) {
+            $this->registerDefaultSections();
+            $this->registerViews();
+            $this->ensureHttps();
+            $this->bootApplication();
+            $this->registerPublishing();
+            $this->compatibleBlade();
+            $this->bootExtensions();
+            $this->registerBladeDirective();
+        }
     }
 
     protected function aliasAdmin()
