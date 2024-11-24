@@ -278,9 +278,39 @@ export default class Helpers {
                 Dcat.loading(false);
                 target.find("option").remove();
 
-                $.map(data, function (d) {
-                    target.append(new Option(d[options.textField], d[options.idField], false, false));
-                });
+                // 處理帶有 children 的數據結構
+                function appendOptions(items) {
+                    $.map(items, function(d) {
+                        if (d.children && d.children.length) {
+                            // 建立 optgroup
+                            let optgroup = $('<optgroup>', {
+                                label: d[options.textField] || d.text
+                            });
+
+                            // 遞迴處理 children
+                            $.map(d.children, function(child) {
+                                optgroup.append(new Option(
+                                    child[options.textField] || child.text,
+                                    child[options.idField] || child.id,
+                                    false,
+                                    false
+                                ));
+                            });
+
+                            target.append(optgroup);
+                        } else {
+                            // 一般選項
+                            target.append(new Option(
+                                d[options.textField] || d.text,
+                                d[options.idField] || d.id,
+                                false,
+                                false
+                            ));
+                        }
+                    });
+                }
+
+                appendOptions(data);
 
                 $(target).val(String(target.data('value')).split(',')).trigger('change');
             });
