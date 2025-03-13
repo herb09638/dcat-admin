@@ -3,6 +3,11 @@
     <div class="col-md-{{$width['label']}} d-md-block" style="display: none"></div>
 
     <div class="col-md-{{$width['field']}}">
+        @if(!empty($buttons['back']))
+            <div class="pull-right btn-group">
+                <button type="button" class="btn btn-white" onclick="history.back()"><i class="feather icon-arrow-left"></i> {{ trans('admin.back') }}</button>
+            </div>
+        @endif
 
         @if(! empty($buttons['submit']))
             <div class="btn-group pull-right">
