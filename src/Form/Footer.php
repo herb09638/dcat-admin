@@ -85,6 +85,13 @@ class Footer implements Renderable
         return $this;
     }
 
+    public function enableBack(bool $enable = true)
+    {
+        $this->buttons['back'] = $enable;
+
+        return $this;
+    }
+
     /**
      * Disable View Checkbox.
      *
