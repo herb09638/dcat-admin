@@ -1028,19 +1028,26 @@ class Form implements Renderable
     {
         Helper::prepareHasOneRelation($this->builder->fields(), $inserts);
 
-        foreach ($inserts as $column => $value) {
-            if (is_null($field = $this->field($column))) {
-                unset($inserts[$column]);
+        $prepared = [];
+        foreach ($this->builder->fields() as $field) {
+            $columns = $field->column();
+
+            // If column not in input array data, then continue.
+            if (! Arr::has($inserts, $columns) || Arr::has($prepared, $columns)) {
                 continue;
             }
 
-            $inserts[$column] = $field->prepare($value);
-        }
+            $value = $this->getDataByColumn($inserts, $columns);
 
-        $prepared = [];
+            $value = $field->prepare($value);
 
-        foreach ($inserts as $key => $value) {
-            Arr::set($prepared, $key, $value);
+            if (is_array($columns)) {
+                foreach ($columns as $name => $column) {
+                    Arr::set($prepared, $column, $value[$name]);
+                }
+            } elseif (is_string($columns)) {
+                Arr::set($prepared, $columns, $value);
+            }
         }
 
         return $prepared;
