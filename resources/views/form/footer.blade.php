@@ -3,11 +3,6 @@
     <div class="col-md-{{$width['label']}} d-md-block" style="display: none"></div>
 
     <div class="col-md-{{$width['field']}}">
-        @if(!empty($buttons['back']))
-            <div class="pull-right btn-group">
-                <button type="button" class="btn btn-white" onclick="history.back()"><i class="feather icon-arrow-left"></i> {{ trans('admin.back') }}</button>
-            </div>
-        @endif
 
         @if(! empty($buttons['submit']))
             <div class="btn-group pull-right">
@@ -18,6 +13,12 @@
                 <div class="pull-right d-md-flex" style="margin:10px 15px 0 0;display: none">{!! $checkboxes !!}</div>
             @endif
 
+        @endif
+
+        @if(!empty($buttons['back']))
+            <div class="pull-right btn-group mr-1">
+                <button type="button" class="btn btn-white" onclick="history.back()"><i class="feather icon-arrow-left"></i> {{ trans('admin.back') }}</button>
+            </div>
         @endif
 
         @if(! empty($buttons['reset']))
