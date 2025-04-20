@@ -18,10 +18,10 @@
 
     $('#{{ $id['start'] }}').datetimepicker(options);
     $('#{{ $id['end'] }}').datetimepicker($.extend(options, {useCurrent: false}));
-    $("#{{ $id['start'] }}").on("dp.change", function (e) {
-        $('#{{ $id['end'] }}').data("DateTimePicker").minDate(e.date);
-    });
-    $("#{{ $id['end'] }}").on("dp.change", function (e) {
-        $('#{{ $id['start'] }}').data("DateTimePicker").maxDate(e.date);
-    });
+    // $("#{{ $id['start'] }}").on("dp.change", function (e) {
+    //     $('#{{ $id['end'] }}').data("DateTimePicker").minDate(e.date);
+    // });
+    // $("#{{ $id['end'] }}").on("dp.change", function (e) {
+    //     $('#{{ $id['start'] }}').data("DateTimePicker").maxDate(e.date);
+    // });
 </script>
