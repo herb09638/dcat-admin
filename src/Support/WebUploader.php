@@ -2,8 +2,10 @@
 
 namespace Dcat\Admin\Support;
 
+use Dcat\Admin\Support\Security\SecureUploader;
 use Illuminate\Http\Request;
 use Symfony\Component\Finder\Finder;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 /**
@@ -29,9 +31,22 @@ class WebUploader
     {
         $request = $this->prepareRequest($request ?: request());
 
-        $this->_id = $request->get('_id');
-        $this->chunk = $request->get('chunk');
-        $this->chunks = $request->get('chunks');
+        $id = $request->get('_id');
+        $chunk = (int) $request->get('chunk', 0);
+        $chunks = (int) $request->get('chunks', 1);
+
+        // Validate upload ID to prevent path traversal
+        if ($id) {
+            $this->_id = SecureUploader::validateUploadId($id);
+        }
+
+        // Validate chunk parameters
+        if ($chunks > 1) {
+            SecureUploader::validateChunkParams($this->_id ?? '', $chunk, $chunks);
+        }
+
+        $this->chunk = $chunk;
+        $this->chunks = $chunks;
         $this->upload_column = $request->get('upload_column');
         $this->file = $request->file(static::FILE_NAME);
     }

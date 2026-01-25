@@ -234,14 +234,41 @@ class EloquentRepository extends Repository implements TreeRepository
      */
     protected function setOrderBy(Grid\Model $model, $column, $type, $cast)
     {
+        // Validate sort direction to prevent SQL injection
+        $type = strtolower($type) === 'desc' ? 'DESC' : 'ASC';
+
         $isJsonColumn = Str::contains($column, '->');
 
         if ($isJsonColumn) {
             $explodedCols = explode('->', $column);
             // json字段排序
             $col = $this->wrapMySqlColumn(array_shift($explodedCols));
-            $parts = implode('.', $explodedCols);
+            // Validate JSON path parts (alphanumeric, underscore, dash only)
+            $parts = collect($explodedCols)->map(function ($part) {
+                return preg_replace('/[^a-zA-Z0-9_-]/', '', $part);
+            })->implode('.');
             $column = "JSON_UNQUOTE(JSON_EXTRACT({$col}, '$.{$parts}'))";
+        }
+
+        if (! empty($cast)) {
+            // Whitelist allowed CAST types to prevent SQL injection
+            $allowedCasts = [
+                'SIGNED', 'UNSIGNED', 'DECIMAL', 'CHAR', 'DATE', 'DATETIME', 'TIME', 'BINARY',
+                'INTEGER', 'INT', 'FLOAT', 'DOUBLE', 'REAL',
+            ];
+            $castUpper = strtoupper(preg_replace('/[^A-Z0-9(),\s]/i', '', $cast));
+            $isValidCast = false;
+            foreach ($allowedCasts as $allowedCast) {
+                if (str_starts_with($castUpper, $allowedCast)) {
+                    $isValidCast = true;
+                    break;
+                }
+            }
+
+            if (! $isValidCast) {
+                // Invalid cast type, skip the cast
+                $cast = null;
+            }
         }
 
         if (! empty($cast)) {

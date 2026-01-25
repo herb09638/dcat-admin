@@ -2,6 +2,8 @@
 
 namespace Dcat\Admin\Grid\Displayers;
 
+use Dcat\Admin\Support\Helper;
+
 class Link extends AbstractDisplayer
 {
     public function display($href = '', $target = '_blank')
@@ -14,6 +16,11 @@ class Link extends AbstractDisplayer
             $href = $href ?: $this->value;
         }
 
-        return "<a href='$href' target='$target'>{$this->value}</a>";
+        // Escape output to prevent XSS
+        $escapedHref = htmlspecialchars($href ?? '', ENT_QUOTES, 'UTF-8');
+        $escapedTarget = htmlspecialchars($target, ENT_QUOTES, 'UTF-8');
+        $escapedValue = Helper::htmlEntityEncode($this->value);
+
+        return "<a href='{$escapedHref}' target='{$escapedTarget}'>{$escapedValue}</a>";
     }
 }

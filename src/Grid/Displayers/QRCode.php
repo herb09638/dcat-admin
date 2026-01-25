@@ -3,6 +3,7 @@
 namespace Dcat\Admin\Grid\Displayers;
 
 use Dcat\Admin\Admin;
+use Dcat\Admin\Support\Helper;
 
 /**
  * Class QRCode.
@@ -42,19 +43,25 @@ JS;
             $content = $formatter->call($this->row, $content);
         }
 
+        // Escape output to prevent XSS
+        $escapedContent = htmlspecialchars($content ?? '', ENT_QUOTES, 'UTF-8');
+        $escapedValue = Helper::htmlEntityEncode($this->value);
+        $width = (int) $width;
+        $height = (int) $height;
+
         return <<<HTML
-<a href="javascript:void(0);" 
-    class="grid-column-qrcode text-muted" 
-    data-text="{$content}" 
+<a href="javascript:void(0);"
+    class="grid-column-qrcode text-muted"
+    data-text="{$escapedContent}"
     data-width="{$width}"
     data-height="{$height}"
-    data-trigger="trigger" 
-    data-html="true" 
-    data-toggle='popover' 
+    data-trigger="trigger"
+    data-html="true"
+    data-toggle='popover'
     tabindex='0'
 >
     <i class="fa fa-qrcode"></i>
-</a>&nbsp;{$this->value}
+</a>&nbsp;{$escapedValue}
 HTML;
     }
 }

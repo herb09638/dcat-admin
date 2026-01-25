@@ -357,6 +357,74 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Security Settings
+    |--------------------------------------------------------------------------
+    |
+    | Configure security-related options for the admin panel.
+    |
+    */
+    'security' => [
+        /*
+         * Class allowlists for dynamic class instantiation.
+         * If empty, only classes extending the required base classes are allowed.
+         * Add specific class names to explicitly allow them.
+         */
+        'class_allowlist' => [
+            'renderable' => [],
+            'action' => [],
+            'form' => [],
+            'value' => [],
+        ],
+
+        /*
+         * Allowed disks for file uploads.
+         * Only these disks can be used for upload operations.
+         */
+        'allowed_upload_disks' => ['public', 'local'],
+
+        /*
+         * Allowed image extensions for upload.
+         */
+        'allowed_image_extensions' => [
+            'jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico',
+        ],
+
+        /*
+         * Allowed file extensions for upload.
+         */
+        'allowed_file_extensions' => [
+            'jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico',
+            'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx',
+            'txt', 'csv', 'zip', 'rar', '7z',
+        ],
+
+        /*
+         * Maximum number of chunks for chunked uploads.
+         */
+        'max_upload_chunks' => 1000,
+
+        /*
+         * Password policy settings.
+         */
+        'password' => [
+            'min_length' => 8,
+            'require_uppercase' => false,
+            'require_lowercase' => false,
+            'require_numbers' => false,
+            'require_symbols' => false,
+        ],
+
+        /*
+         * Login rate limiting settings.
+         */
+        'rate_limiting' => [
+            'login_max_attempts' => 5,
+            'login_decay_minutes' => 15,
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Extension
     |--------------------------------------------------------------------------
     */

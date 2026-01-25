@@ -24,9 +24,13 @@ class Downloadable extends AbstractDisplayer
 
             $name = Helper::basename($value);
 
+            // Escape output to prevent XSS
+            $escapedSrc = htmlspecialchars($src, ENT_QUOTES, 'UTF-8');
+            $escapedName = Helper::htmlEntityEncode($name);
+
             return <<<HTML
-<a href='$src' download='{$name}' target='_blank' class='text-muted'>
-    <i class="feather icon-download"></i> {$name}
+<a href='{$escapedSrc}' download='{$escapedName}' target='_blank' class='text-muted'>
+    <i class="feather icon-download"></i> {$escapedName}
 </a>
 HTML;
         })->implode('<br>');

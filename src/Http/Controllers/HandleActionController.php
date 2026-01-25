@@ -5,6 +5,7 @@ namespace Dcat\Admin\Http\Controllers;
 use Dcat\Admin\Actions\Action;
 use Dcat\Admin\Actions\Response;
 use Dcat\Admin\Exception\AdminException;
+use Dcat\Admin\Support\Security\ClassValidator;
 use Illuminate\Http\Request;
 
 class HandleActionController
@@ -40,11 +41,8 @@ class HandleActionController
             throw new AdminException('Invalid action request.');
         }
 
-        $actionClass = str_replace('_', '\\', $request->get('_action'));
-
-        if (! class_exists($actionClass)) {
-            throw new AdminException("Action [{$actionClass}] does not exist.");
-        }
+        // Validate class before instantiation to prevent RCE
+        $actionClass = ClassValidator::validate($request->get('_action'), 'action');
 
         /** @var Action $action */
         $action = app($actionClass);

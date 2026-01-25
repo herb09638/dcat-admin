@@ -5,6 +5,7 @@ namespace Dcat\Admin\Http\Controllers;
 use Dcat\Admin\Admin;
 use Dcat\Admin\Contracts\LazyRenderable;
 use Dcat\Admin\Support\Helper;
+use Dcat\Admin\Support\Security\ClassValidator;
 use Illuminate\Http\Request;
 
 class RenderableController
@@ -49,7 +50,8 @@ class RenderableController
     {
         $class = $request->get('renderable');
 
-        $class = str_replace('_', '\\', $class);
+        // Validate class before instantiation to prevent RCE
+        $class = ClassValidator::validate($class, 'renderable');
 
         $renderable = new $class();
 

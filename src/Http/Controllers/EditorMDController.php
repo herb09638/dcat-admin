@@ -2,29 +2,42 @@
 
 namespace Dcat\Admin\Http\Controllers;
 
+use Dcat\Admin\Support\Security\SecureUploader;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 class EditorMDController
 {
     public function upload(Request $request)
     {
         $file = $request->file('editormd-image-file');
-        $dir = trim($request->get('dir'), '/');
-        $disk = $this->disk();
 
-        $newName = $this->generateNewName($file);
+        if (! $file || ! $file->isValid()) {
+            return ['success' => 0, 'message' => 'Invalid file upload.'];
+        }
 
-        $disk->putFileAs($dir, $file, $newName);
+        try {
+            // Validate and sanitize inputs
+            $dir = SecureUploader::sanitizeDirectory($request->get('dir', ''));
+            $disk = SecureUploader::validateDisk($request->get('disk'));
 
-        return ['success' => 1, 'url' => $disk->url("{$dir}/$newName")];
-    }
+            // Validate file type (images only for editor)
+            SecureUploader::validateExtension($file, 'image');
+            SecureUploader::validateMimeType($file, 'image');
 
-    protected function generateNewName(UploadedFile $file)
-    {
-        return uniqid(md5($file->getClientOriginalName())).'.'.$file->getClientOriginalExtension();
+            // Generate secure filename
+            $newName = SecureUploader::generateSecureFilename($file);
+
+            // Store file
+            $storage = Storage::disk($disk);
+            $storage->putFileAs($dir, $file, $newName);
+
+            return ['success' => 1, 'url' => $storage->url("{$dir}/{$newName}")];
+        } catch (FileException $e) {
+            return ['success' => 0, 'message' => $e->getMessage()];
+        }
     }
 
     /**
@@ -32,7 +45,7 @@ class EditorMDController
      */
     protected function disk()
     {
-        $disk = request()->get('disk') ?: config('admin.upload.disk');
+        $disk = SecureUploader::validateDisk(request()->get('disk'));
 
         return Storage::disk($disk);
     }

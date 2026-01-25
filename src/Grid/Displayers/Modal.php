@@ -73,8 +73,11 @@ class Modal extends AbstractDisplayer
 
     protected function renderButton()
     {
-        $icon = $this->icon ? "<i class='fa {$this->icon}'></i>&nbsp;&nbsp;" : '';
+        // Escape output to prevent XSS
+        $escapedIcon = $this->icon ? htmlspecialchars($this->icon, ENT_QUOTES, 'UTF-8') : '';
+        $icon = $escapedIcon ? "<i class='fa {$escapedIcon}'></i>&nbsp;&nbsp;" : '';
+        $escapedValue = Helper::htmlEntityEncode($this->value);
 
-        return "<a href='javascript:void(0)'>{$icon}{$this->value}</a>";
+        return "<a href='javascript:void(0)'>{$icon}{$escapedValue}</a>";
     }
 }

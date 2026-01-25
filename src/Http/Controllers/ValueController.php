@@ -2,6 +2,7 @@
 
 namespace Dcat\Admin\Http\Controllers;
 
+use Dcat\Admin\Support\Security\ClassValidator;
 use Exception;
 use Illuminate\Http\Request;
 
@@ -42,9 +43,8 @@ class ValueController
             throw new Exception('Invalid request.');
         }
 
-        if (! class_exists($key)) {
-            throw new Exception("Class [{$key}] does not exist.");
-        }
+        // Validate class before instantiation to prevent RCE
+        $key = ClassValidator::validate($key, 'value');
 
         $instance = app($key);
 

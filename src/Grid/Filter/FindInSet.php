@@ -30,7 +30,9 @@ class FindInSet extends AbstractFilter
         $this->input = $this->value = $value;
 
         $query = function ($query) {
-            $query->whereRaw("FIND_IN_SET(?, $this->column)", $this->value);
+            // Use Grammar to properly quote the column name to prevent SQL injection
+            $quotedColumn = $query->getGrammar()->wrap($this->column);
+            $query->whereRaw("FIND_IN_SET(?, {$quotedColumn})", [$this->value]);
         };
 
         return $this->buildCondition($query->bindTo($this));

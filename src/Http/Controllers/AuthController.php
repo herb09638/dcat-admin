@@ -11,6 +11,7 @@ use Illuminate\Auth\GuardHelpers;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Lang;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Validator;
 
@@ -50,6 +51,23 @@ class AuthController extends Controller
      */
     public function postLogin(Request $request)
     {
+        // Rate limiting to prevent brute force attacks
+        $rateLimitKey = 'admin_login:'.$request->ip();
+        $maxAttempts = config('admin.security.rate_limiting.login_max_attempts', 5);
+        $decayMinutes = config('admin.security.rate_limiting.login_decay_minutes', 15);
+
+        if (RateLimiter::tooManyAttempts($rateLimitKey, $maxAttempts)) {
+            $seconds = RateLimiter::availableIn($rateLimitKey);
+            $minutes = ceil($seconds / 60);
+
+            return $this->validationErrorsResponse([
+                $this->username() => trans('admin.too_many_login_attempts', [
+                    'seconds' => $seconds,
+                    'minutes' => $minutes,
+                ], "Too many login attempts. Please try again in {$minutes} minute(s)."),
+            ]);
+        }
+
         $credentials = $request->only([$this->username(), 'password']);
         $remember = (bool) $request->input('remember', false);
 
@@ -64,8 +82,12 @@ class AuthController extends Controller
         }
 
         if ($this->guard()->attempt($credentials, $remember)) {
+            RateLimiter::clear($rateLimitKey);
+
             return $this->sendLoginResponse($request);
         }
+
+        RateLimiter::hit($rateLimitKey, $decayMinutes * 60);
 
         return $this->validationErrorsResponse([
             $this->username() => $this->getFailedLoginMessage(),
@@ -175,9 +197,10 @@ class AuthController extends Controller
 
             $form->password('old_password', trans('admin.old_password'));
 
-            $form->password('password', trans('admin.password'))
-                ->minLength(5)
-                ->maxLength(20)
+            $minLength = config('admin.security.password.min_length', 8);
+            $passwordField = $form->password('password', trans('admin.password'))
+                ->minLength($minLength)
+                ->maxLength(255)
                 ->customFormat(function ($v) {
                     if ($v == $this->password) {
                         return;
@@ -185,6 +208,12 @@ class AuthController extends Controller
 
                     return $v;
                 });
+
+            // Apply password complexity rules if configured
+            $passwordRules = $this->getPasswordRules();
+            if (! empty($passwordRules)) {
+                $passwordField->rules($passwordRules);
+            }
             $form->password('password_confirmation', trans('admin.password_confirmation'))->same('password');
 
             $form->ignore(['password_confirmation', 'old_password']);
@@ -216,6 +245,32 @@ class AuthController extends Controller
         return Lang::has('admin.auth_failed')
             ? trans('admin.auth_failed')
             : 'These credentials do not match our records.';
+    }
+
+    /**
+     * Get password complexity rules from config.
+     *
+     * @return array
+     */
+    protected function getPasswordRules(): array
+    {
+        $rules = [];
+        $config = config('admin.security.password', []);
+
+        if ($config['require_uppercase'] ?? false) {
+            $rules[] = 'regex:/[A-Z]/';
+        }
+        if ($config['require_lowercase'] ?? false) {
+            $rules[] = 'regex:/[a-z]/';
+        }
+        if ($config['require_numbers'] ?? false) {
+            $rules[] = 'regex:/[0-9]/';
+        }
+        if ($config['require_symbols'] ?? false) {
+            $rules[] = 'regex:/[@$!%*#?&]/';
+        }
+
+        return $rules;
     }
 
     /**

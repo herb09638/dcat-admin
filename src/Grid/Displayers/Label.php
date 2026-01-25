@@ -25,7 +25,10 @@ class Label extends AbstractDisplayer
         );
 
         return collect($value)->map(function ($name) use ($background) {
-            return "<span class='{$this->baseClass}' {$background}>$name</span>";
+            // Escape output to prevent XSS
+            $escapedName = Helper::htmlEntityEncode($name);
+
+            return "<span class='{$this->baseClass}' {$background}>{$escapedName}</span>";
         })->implode(' ');
     }
 

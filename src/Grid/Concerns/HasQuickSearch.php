@@ -173,7 +173,9 @@ trait HasQuickSearch
                 }
 
                 if (preg_match('/\/(?<value>.*)\//', $condition, $match) !== 0) {
-                    $this->addWhereBasicBinding($q, $column, $or, 'REGEXP', $match['value']);
+                    // Escape REGEXP special characters to prevent SQL injection and ReDoS
+                    $escapedValue = preg_quote($match['value'], '/');
+                    $this->addWhereBasicBinding($q, $column, $or, 'REGEXP', $escapedValue);
                     continue;
                 }
 
