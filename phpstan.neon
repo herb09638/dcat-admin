@@ -1,0 +1,9 @@
+parameters:
+    level: 5
+    paths:
+        - src
+    excludePaths:
+        - src/Console/stubs
+    ignoreErrors:
+        - '#Call to an undefined method Illuminate\\Database\\.*#'
+        - '#Access to an undefined property Illuminate\\Database\\.*#'
